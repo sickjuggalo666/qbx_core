@@ -8,5 +8,6 @@
         "MySQL",
         "QBX",
         "qbx"
-    ]
+    ],
+    "git.ignoreLimitWarning": true
 }

@@ -109,7 +109,7 @@ function SetJob(identifier, jobName, grade)
 
     local player = type(identifier) == 'string' and (GetPlayerByCitizenId(identifier) or GetOfflinePlayer(identifier)) or GetPlayer(identifier)
 
-    if setJobReplaces and player.PlayerData.job.name ~= 'unemployed' then
+    if setJobReplaces and player.PlayerData.job.name ~= 'survivor' then
         local success, errorResult = RemovePlayerFromJob(player.PlayerData.citizenid, player.PlayerData.job.name)
 
         if not success then
@@ -117,7 +117,7 @@ function SetJob(identifier, jobName, grade)
         end
     end
 
-    if jobName ~= 'unemployed' then
+    if jobName ~= 'survivor' then
         local success, errorResult = AddPlayerToJob(player.PlayerData.citizenid, jobName, grade)
 
         if not success then
@@ -183,7 +183,7 @@ function SetPlayerPrimaryJob(citizenid, jobName)
         }
     end
 
-    local grade = jobName == 'unemployed' and 0 or player.PlayerData.jobs[jobName]
+    local grade = jobName == 'survivor' and 0 or player.PlayerData.jobs[jobName]
     if not grade then
         return false, {
             code = 'player_not_in_job',
@@ -227,11 +227,11 @@ function AddPlayerToJob(citizenid, jobName, grade)
     jobName = jobName:lower()
     grade = tonumber(grade) or 0
 
-    -- unemployed job is the default, so players cannot be added to it
-    if jobName == 'unemployed' then
+    -- survivor job is the default, so players cannot be added to it
+    if jobName == 'survivor' then
         return false, {
-            code = 'unemployed',
-            message = 'players cannot be added to the unemployed job'
+            code = 'survivor',
+            message = 'players cannot be added to the survivor job'
         }
     end
 
@@ -287,16 +287,16 @@ end
 
 exports('AddPlayerToJob', AddPlayerToJob)
 
----If the job removed from is primary, sets the primary job to unemployed.
+---If the job removed from is primary, sets the primary job to survivor.
 ---@param citizenid string
 ---@param jobName string
 ---@return boolean success
 ---@return ErrorResult? errorResult
 function RemovePlayerFromJob(citizenid, jobName)
-    if jobName == 'unemployed' then
+    if jobName == 'survivor' then
         return false, {
-            code = 'unemployed',
-            message = 'players cannot be removed from the unemployed job'
+            code = 'survivor',
+            message = 'players cannot be removed from the survivor job'
         }
     end
 
@@ -316,9 +316,9 @@ function RemovePlayerFromJob(citizenid, jobName)
     player.PlayerData.jobs[jobName] = nil
 
     if player.PlayerData.job.name == jobName then
-        local job = GetJob('unemployed')
-        assert(job ~= nil, 'cannot find unemployed job. Does it exist in shared/jobs.lua?')
-        player.PlayerData.job = toPlayerJob('unemployed', job, 0)
+        local job = GetJob('survivor')
+        assert(job ~= nil, 'cannot find survivor job. Does it exist in shared/jobs.lua?')
+        player.PlayerData.job = toPlayerJob('survivor', job, 0)
         if player.Offline then
             SaveOffline(player.PlayerData)
         else
@@ -660,15 +660,15 @@ function CheckPlayerData(source, playerData)
     }
     local jobs, gangs = storage.fetchPlayerGroups(playerData.citizenid)
 
-    local job = GetJob(playerData.job?.name) or GetJob('unemployed')
-    assert(job ~= nil, 'Unemployed job not found. Does it exist in shared/jobs.lua?')
+    local job = GetJob(playerData.job?.name) or GetJob('survivor')
+    assert(job ~= nil, 'survivor job not found. Does it exist in shared/jobs.lua?')
     local jobGrade = GetJob(playerData.job?.name) and playerData.job.grade.level or 0
     if not job.grades[jobGrade] then
         jobGrade = 0
     end
 
     playerData.job = {
-        name = playerData.job?.name or 'unemployed',
+        name = playerData.job?.name or 'survivor',
         label = job.label,
         payment = job.grades[jobGrade].payment or 0,
         type = job.type,
@@ -857,60 +857,55 @@ function CreatePlayer(playerData, Offline)
         return item == 'cash' and 'money' or item
     end
 
-    ---@deprecated use ox_inventory exports directly
     ---@param item string
     ---@param amount number
     ---@param metadata? table
     ---@param slot? number
     ---@return boolean success
-    function self.Functions.AddItem(item, amount, slot, metadata)
-        assert(not self.Offline, 'unsupported for offline players')
-        return exports.ox_inventory:AddItem(self.PlayerData.source, oxItemCompat(item), amount, metadata, slot)
+    function self.Functions.AddItem(item, amount, slot, metadata, inventory)
+        inventory = inventory or 'content-' ..  self.PlayerData.citizenid
+        amount = amount or 1
+        return exports['core_inventory']:addItem(inventory, item, tonumber(amount), metadata)
     end
 
-    ---@deprecated use ox_inventory exports directly
     ---@param item string
     ---@param amount number
     ---@param slot? number
     ---@return boolean success
-    function self.Functions.RemoveItem(item, amount, slot)
-        assert(not self.Offline, 'unsupported for offline players')
-        return exports.ox_inventory:RemoveItem(self.PlayerData.source, oxItemCompat(item), amount, nil, slot)
+    function self.Functions.RemoveItem(item, amount, slot, inventory)
+        inventory = inventory or 'content-' ..  self.PlayerData.citizenid 
+        amount = amount or 1
+        return exports['core_inventory']:removeItem(inventory, item, tonumber(amount))
     end
 
-    ---@deprecated use ox_inventory exports directly
     ---@param slot number
     ---@return any table
     function self.Functions.GetItemBySlot(slot)
         assert(not self.Offline, 'unsupported for offline players')
-        return qbItemCompat(exports.ox_inventory:GetSlot(self.PlayerData.source, slot))
+        return qbItemCompat(exports.core_inventory:getItemBySlot(self.PlayerData.source, slot))
     end
 
-    ---@deprecated use ox_inventory exports directly
     ---@param itemName string
     ---@return any table
-    function self.Functions.GetItemByName(itemName)
-        assert(not self.Offline, 'unsupported for offline players')
-        return qbItemCompat(exports.ox_inventory:GetSlotWithItem(self.PlayerData.source, oxItemCompat(itemName)))
+    function self.Functions.GetItemByName(item, inventory)
+        inventory = inventory or 'content-' ..  self.PlayerData.citizenid 
+        return exports['core_inventory']:getItem(inventory, item)
     end
 
-    ---@deprecated use ox_inventory exports directly
     ---@param itemName string
     ---@return any table
-    function self.Functions.GetItemsByName(itemName)
-        assert(not self.Offline, 'unsupported for offline players')
-        return qbItemCompat(exports.ox_inventory:GetSlotsWithItem(self.PlayerData.source, oxItemCompat(itemName)))
+    function self.Functions.GetItemsByName(item, inventory)
+        inventory = inventory or 'content-' ..  self.PlayerData.citizenid 
+        return exports['core_inventory']:getItems(inventory, item)
     end
 
-    ---@deprecated use ox_inventory exports directly
     function self.Functions.ClearInventory()
         assert(not self.Offline, 'unsupported for offline players')
-        return exports.ox_inventory:ClearInventory(self.PlayerData.source)
+        
+        return exports.core_inventory:clearInventory(self.PlayerData.source, self.PlayerData.source)
     end
 
-    ---@deprecated use ox_inventory exports directly
     function self.Functions.SetInventory()
-        error('Player.Functions.SetInventory is unsupported for ox_inventory. Try ClearInventory, then add the desired items.')
     end
 
     ---@deprecated use SetCharInfo instead
@@ -942,14 +937,14 @@ function CreatePlayer(playerData, Offline)
 
         if not job then
             self.PlayerData.job = {
-                name = 'unemployed',
-                label = 'Civilian',
+                name = 'survivor',
+                label = 'Survivor',
                 isboss = false,
                 bankAuth = false,
                 onduty = true,
                 payment = 10,
                 grade = {
-                    name = 'Freelancer',
+                    name = 'Scavenger',
                     level = 0,
                 }
             }
@@ -1069,7 +1064,6 @@ function Save(source)
             position = pcoords,
         })
     end)
-    assert(GetResourceState('qb-inventory') ~= 'started', 'qb-inventory is not compatible with qbx_core. use ox_inventory instead')
     lib.print.verbose(('%s PLAYER SAVED!'):format(playerData.name))
 end
 
@@ -1088,7 +1082,6 @@ function SaveOffline(playerData)
             position = playerData.position.xyz
         })
     end)
-    assert(GetResourceState('qb-inventory') ~= 'started', 'qb-inventory is not compatible with qbx_core. use ox_inventory instead')
     lib.print.verbose(('%s OFFLINE PLAYER SAVED!'):format(playerData.name))
 end
 
@@ -1251,7 +1244,7 @@ local function emitMoneyEvents(source, playerMoney, moneyType, amount, actionTyp
     local oxMoneyType = moneyType == 'cash' and 'money' or moneyType
 
     if accountsAsItems[oxMoneyType] then
-        exports.ox_inventory:SetItem(source, oxMoneyType, playerMoney[moneyType])
+        exports.core_inventory:setItem(source, oxMoneyType, amount)
     end
 end
 

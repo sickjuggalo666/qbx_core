@@ -17,19 +17,9 @@ functions.GetCoords = function(entity) -- luacheck: ignore
     return vec4(coords.x, coords.y, coords.z, GetEntityHeading(entity))
 end
 
----@deprecated use https://coxdocs.dev/ox_inventory/Functions/Client#search
 functions.HasItem = function(items, amount)
-    amount = amount or 1
-    local count = exports.ox_inventory:Search('count', items)
-    if type(items) == 'table' and type(count) == 'table' then
-        for _, v in pairs(count) do
-            if v < amount then
-                return false
-            end
-        end
-        return true
-    end
-    return count >= amount
+   if GetResourceState('core_inventory') == 'missing' then return end
+   return exports['core_inventory']:hasItem(items, amount)
 end
 
 -- Utility
@@ -58,23 +48,18 @@ functions.DrawText3D = function(x, y, z, text)
     })
 end
 
----@deprecated use lib.requestAnimDict from ox_lib
 functions.RequestAnimDict = lib.requestAnimDict
 
----@deprecated use lib.requestAnimDict from ox_lib, and the TaskPlayAnim and RemoveAnimDict natives directly
 functions.PlayAnim = function(animDict, animName, upperbodyOnly, duration)
     local flags = upperbodyOnly and 16 or 0
     local runTime = duration or -1
     lib.playAnim(cache.ped, animDict, animName, 8.0, 3.0, runTime, flags, 0.0, false, false, true)
 end
 
----@deprecated use lib.requestModel from ox_lib
 functions.LoadModel = lib.requestModel
 
----@deprecated use lib.requestAnimSet from ox_lib
 functions.LoadAnimSet = lib.requestAnimSet
 
----@deprecated use lib.progressBar from ox_lib
 ---@param label string
 ---@param duration integer ms
 ---@param useWhileDead boolean
@@ -85,12 +70,12 @@ functions.LoadAnimSet = lib.requestAnimSet
 ---@param onFinish fun()
 ---@param onCancel fun()
 function functions.Progressbar(_, label, duration, useWhileDead, canCancel, disableControls, animation, prop, _, onFinish, onCancel)
-    if lib.progressBar({
-        duration = duration,
+    if exports.lation_ui:progressBar({
         label = label,
+        duration = duration,
         useWhileDead = useWhileDead,
         canCancel = canCancel,
-        disable = {
+        disable = { 
             move = disableControls?.disableMovement,
             car = disableControls?.disableCarMovement,
             combat = disableControls?.disableCombat,
@@ -99,18 +84,17 @@ function functions.Progressbar(_, label, duration, useWhileDead, canCancel, disa
         anim = {
             dict = animation?.animDict,
             clip = animation?.anim,
-            flags = animation?.flags
         },
         prop = {
             model = prop?.model,
             pos = prop?.coords,
             rot = prop?.rotation,
-        },
-    }) then
+        }
+    }) then 
         if onFinish then
             onFinish()
         end
-    else
+    else 
         if onCancel then
             onCancel()
         end
@@ -900,7 +884,14 @@ end
 ---@param notifyIcon? string Font Awesome 6 icon name
 ---@param notifyIconColor? string Custom color for the icon chosen before
 function functions.Notify(text, notifyType, duration, subTitle, notifyPosition, notifyStyle, notifyIcon, notifyIconColor)
-    exports.qbx_core:Notify(text, notifyType, duration, subTitle, notifyPosition, notifyStyle, notifyIcon, notifyIconColor)
+    exports.lation_ui:notify({
+        title = text,
+        message = subTitle or '',
+        type = notifyType,
+        duration = duration,
+        icon = notifyIcon,
+        iconColor = notifyIconColor
+    })
 end
 
 return functions

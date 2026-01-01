@@ -1,4 +1,3 @@
--- Modified from original source https://github.com/overextended/ox_inventory/blob/main/modules/hooks/server.lua
 -- Copyright (C) 2021  Linden <https://github.com/thelindat>, Dunak <https://github.com/dunak-debug>, Luke <https://github.com/LukeWasTakenn>
 
 assert(lib.checkDependency('ox_lib', '3.8.0', true))

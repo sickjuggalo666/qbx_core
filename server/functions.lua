@@ -411,15 +411,13 @@ function Notify(source, text, notifyType, duration, subTitle, notifyPosition, no
         description = text
     end
     local position = notifyPosition or positionConfig
-
-    TriggerClientEvent('ox_lib:notify', source, {
+    TriggerClientEvent('lation_ui:notify', source, {
         id = title,
         title = title,
         description = description,
         duration = duration,
         type = notifyType,
         position = position,
-        style = notifyStyle,
         icon = notifyIcon,
         iconColor = notifyIconColor
     })

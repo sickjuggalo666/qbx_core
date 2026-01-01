@@ -215,23 +215,13 @@ if isServer then
         return false
     end
 
-    ---@deprecated use https://coxdocs.dev/ox_inventory/Functions/Server#search
     ---@param source Source
     ---@param items string | string[] The item(s) to check for. Can be a string or a table and is mandatory.
     ---@param amount? integer The desired quantity of each item. Acceptable to pass nil, will default to 1.
     ---@return boolean Returns true if the player has the specified items in the desired quantity, false otherwise
     function HasItem(source, items, amount) -- luacheck: ignore
-        amount = amount or 1
-        local count = exports.ox_inventory:Search(source, 'count', items)
-        if type(items) == 'table' and type(count) == 'table' then
-            for _, v in pairs(count) do
-                if v < amount then
-                    return false
-                end
-            end
-            return true
-        end
-        return count >= amount
+        if GetResourceState('core_inventory') == 'missing' then return end
+        return exports['core_inventory']:hasItem(source, items, amount)
     end
 else
     ---@deprecated use qbx.drawText2d from modules/lib.lua
@@ -296,22 +286,12 @@ else
         return qbx.entityStateHandler(keyFilter, cb)
     end
 
-    ---@deprecated use https://coxdocs.dev/ox_inventory/Functions/Client#search
     ---@param items string | string[] The item(s) to check for. Can be a string or a table and is mandatory.
     ---@param amount? integer The desired quantity of each item. Acceptable to pass nil, will default to 1.
     ---@return boolean Returns true if the player has the specified items in the desired quantity, false otherwise
     function HasItem(items, amount) -- luacheck: ignore
-        amount = amount or 1
-        local count = exports.ox_inventory:Search('count', items)
-        if type(items) == 'table' and type(count) == 'table' then
-            for _, v in pairs(count) do
-                if v < amount then
-                    return false
-                end
-            end
-            return true
-        end
-        return count >= amount
+        if GetResourceState('core_inventory') == 'missing' then return end
+        return exports['core_inventory']:hasItem(items, amount)
     end
 
     ---@deprecated use lib.requestAnimDict from ox_lib, and the TaskPlayAnim and RemoveAnimDict natives directly

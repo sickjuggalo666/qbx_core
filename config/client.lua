@@ -2,10 +2,10 @@ return {
     statusIntervalSeconds = 5, -- how often to check hunger/thirst status to remove health if 0.
     loadingModelsTimeout = 30000, -- Waiting time for ox_lib to load the models before throws an error, for low specs pc
 
-    pauseMapText = 'Powered by Qbox', -- Text shown above the map when ESC is pressed. If left empty 'FiveM' will appear
+    pauseMapText = 'Powered by SickScripts', -- Text shown above the map when ESC is pressed. If left empty 'FiveM' will appear
 
     characters = {
-        useExternalCharacters = false, -- Whether you have an external character management resource. (If true, disables the character management inside the core)
+        useExternalCharacters = true, -- Whether you have an external character management resource. (If true, disables the character management inside the core)
         enableDeleteButton = true, -- Whether players should be able to delete characters themselves.
         startingApartment = true, -- If set to false, skips apartment choice in the beginning (requires qbx_spawn if true)
 
@@ -54,31 +54,31 @@ return {
     discord = {
         enabled = true, -- This will enable or disable the built in discord rich presence.
 
-        appId = '1024981890798731345', -- This is the Application ID (Replace this with you own)
+        appId = '1409913750101692516', -- This is the Application ID (Replace this with you own)
 
         largeIcon = { -- To set this up, visit https://forum.cfx.re/t/how-to-updated-discord-rich-presence-custom-image/157686
-            icon = 'duck', -- Here you will have to put the image name for the 'large' icon.
-            text = 'Qbox Ducky', -- Here you can add hover text for the 'large' icon.
+            icon = 'deadhorizonbaner_medium_', -- Here you will have to put the image name for the 'large' icon.
+            text = 'Dead Horizon RP', -- Here you can add hover text for the 'large' icon.
         },
 
         smallIcon = {
-            icon = 'logo_name', -- Here you will have to put the image name for the 'small' icon.
-            text = 'This is a small icon with text', -- Here you can add hover text for the 'small' icon.
+            icon = 'newdeadlogo', -- Here you will have to put the image name for the 'small' icon.
+            text = 'Eveything wants you dead', -- Here you can add hover text for the 'small' icon.
         },
 
         firstButton = {
-            text = 'Qbox Discord',
-            link = 'https://discord.gg/Z6Whda5hHA',
+            text = 'DHRP Discord',
+            link = 'https://discord.gg/J9AbWM8tvu',
         },
 
         secondButton = {
-            text = 'Main Website',
-            link = 'https://www.qbox.re/',
+            text = 'Donation Store',
+            link = 'https://dead-horizon-webstore.tebex.io/',
         }
     },
 
     --- Only used by QB bridge
     hasKeys = function(plate, vehicle)
-        return GetResourceState('qbx_vehiclekeys') ~= 'started' or exports.qbx_vehiclekeys:HasKeys(vehicle)
+        return exports['0r-vehiclekeys']:HasKeys(plate)
     end,
 }

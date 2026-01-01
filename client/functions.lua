@@ -22,16 +22,13 @@ function Notify(text, notifyType, duration, subTitle, notifyPosition, notifyStyl
     end
     local position = notifyPosition or positionConfig
 
-    lib.notify({
-        id = title,
+    exports.lation_ui:notify({
         title = title,
-        description = description,
+        message = description,
         duration = duration,
-        type = notifyType,
         position = position,
-        style = notifyStyle,
         icon = notifyIcon,
-        iconColor = notifyIconColor
+        iconColor = notifyIconColor,
     })
 end
 
